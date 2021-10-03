@@ -1,0 +1,6 @@
+configuration.json
+market-tracker
+tags
+.vscode/
+
+*.env
