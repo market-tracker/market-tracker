@@ -10,6 +10,8 @@
 
 #### Development
 
+Ensure to install [pre-commit](https://pre-commit.com/#install) and follow the instructions of [conventional-pre-commit](https://github.com/compilerla/conventional-pre-commit)
+
 First, it must be created a volume. This is necessary to avoid to install all the dependencies all the time when the project was initialized. If there are some problems with dependencies, it can be tested to remove the volume then create it again, and try again with the development.
 
 ```bash
