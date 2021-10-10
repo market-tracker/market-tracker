@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"log"
+
+	"github.com/market-tracker/market-tracker/server"
 )
 
-func QueryMarket(c *gin.Context) {
-	fmt.Println("QueryMarket router")
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
+func init() {
+	fmt.Println("First of all")
 }
 
 func main() {
 	fmt.Println("Hello market-tracker project")
-	app := gin.Default()
-	app.GET("/query-market", QueryMarket)
-	app.Run(":3000")
+	s := server.InitServer(3000)
+	s.Start(func() {
+		log.Panic("App crash")
+	})
 }
