@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/market-tracker/market-tracker/app"
 )
@@ -12,12 +13,12 @@ type Server struct {
 
 var server *Server
 
-func (s *Server) Start(callback func()) {
+func (s *Server) Start() {
 	addr := fmt.Sprintf(":%d", s.port)
 	a := app.GetInstance()
 	a.Start()
 	if err := a.Run(addr); err != nil {
-		callback()
+		log.Panic("App crash")
 	}
 }
 

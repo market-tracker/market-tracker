@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 
+	"github.com/market-tracker/market-tracker/config"
 	"github.com/market-tracker/market-tracker/server"
 )
 
@@ -12,9 +12,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Hello market-tracker project")
-	s := server.InitServer(3000)
-	s.Start(func() {
-		log.Panic("App crash")
-	})
+	c := config.GetConfiguration()
+	s := server.InitServer(c.Port)
+	s.Start()
 }
