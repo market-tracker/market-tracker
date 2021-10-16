@@ -31,6 +31,14 @@ For install new packages is necessary to use de docker daemon like a bridge. All
 docker exec market go get -u github.com/gin-gonic/gin
 ```
 
+If it is the first time, it can be used:
+
+```bash
+docker exec market go get ./...
+```
+
+To obtain all the packages in th go.mod inside the docker container
+
 #### Production
 
 With this commands it can be executed the project for production
