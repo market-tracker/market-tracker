@@ -1,3 +1,5 @@
 {
-    "Port": 3000
+    "Port": 3000,
+    "TiingoApiToken": "some super secret key",
+    "TiingoApiUrl": "wss://api.tiingo.com/crypto"
 }

@@ -7,7 +7,9 @@ import (
 )
 
 type Configuration struct {
-	Port int32
+	Port           int32
+	TiingoApiToken string
+	TiingoApiUrl   string
 }
 
 var configuration *Configuration
