@@ -21,7 +21,7 @@ func init() {
 			ThresholdLevel: 5,
 		},
 	}
-	ws := wsTiingo.GetWsTiingo(ctx, c.TiingoApiUrl, tiingoOpts)
+	ws := wsTiingo.NewWsTiingo(ctx, c.TiingoApiUrl, tiingoOpts)
 
 	// run in a go rutine because in the subscription, the subscriber is waiting
 	// for msgs
