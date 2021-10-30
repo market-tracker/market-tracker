@@ -19,8 +19,6 @@ type WsTiingo struct {
 	opts      *TiingoOptions
 }
 
-var ws *WsTiingo
-
 type EventDataTiingo struct {
 	ThresholdLevel int `json:"thresholdLevel"`
 }
@@ -32,10 +30,7 @@ type TiingoOptions struct {
 }
 
 // TODO: create an options struct, to defined the variables to setup this websocket
-func GetWsTiingo(ctx context.Context, tiingoWsUrl string, opts *TiingoOptions) *WsTiingo {
-	if ws != nil {
-		return ws
-	}
+func NewWsTiingo(ctx context.Context, tiingoWsUrl string, opts *TiingoOptions) *WsTiingo {
 	dialOps := &websocket.DialOptions{}
 	c, _, err := websocket.Dial(ctx, tiingoWsUrl, dialOps)
 	errorHandler.PanicError(err)
@@ -58,6 +53,7 @@ func (w *WsTiingo) Subscribe(ctx context.Context) {
 	msg, err := json.Marshal(w.opts)
 	errorHandler.LogError(err)
 	if err = w.conn.Write(ctx, websocket.MessageText, msg); err != nil {
+		// TODO: It is necesary to panic in this part if some websocket failed
 		errorHandler.PanicError(err)
 	}
 	// subscribeOptions := &wsWrapper.SubscribeOptions{
