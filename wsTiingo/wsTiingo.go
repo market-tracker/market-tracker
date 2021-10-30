@@ -9,6 +9,7 @@ import (
 
 	"github.com/market-tracker/market-tracker/pkg/errorHandler"
 	"github.com/market-tracker/market-tracker/pkg/wsWrapper"
+	"github.com/market-tracker/market-tracker/wsMsg"
 	"nhooyr.io/websocket"
 )
 
@@ -67,16 +68,17 @@ func (w *WsTiingo) Subscribe(ctx context.Context) {
 	go func() {
 		defer close(done)
 		for {
-			msgType, message, err := w.conn.Read(ctx)
+			_, message, err := w.conn.Read(ctx)
 			fmt.Println()
-			fmt.Println("message")
-			log.Printf("recv: %s", message)
-			fmt.Println(msgType)
-			if err != nil {
-				log.Println("read:", err)
-				return
+			errorHandler.LogError(err)
+			tiingoMsg := &wsMsg.TiingoMsg{}
+			if err := json.Unmarshal(message, tiingoMsg); err != nil {
+				errorHandler.LogError(err)
+				continue
 			}
-			log.Printf("recv: %s", message)
+			// TODO: Handle the error with more logic if failed
+			marketMsg := wsMsg.TiingoAdapter(tiingoMsg)
+			log.Printf("Market: %v", marketMsg)
 		}
 	}()
 
