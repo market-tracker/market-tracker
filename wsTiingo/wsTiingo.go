@@ -3,6 +3,7 @@ package wsTiingo
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,27 +14,14 @@ import (
 	"nhooyr.io/websocket"
 )
 
-// TODO: dependency injection strategy
-type WsTiingo struct {
-	conn      *websocket.Conn
-	wsWrapper *wsWrapper.WsWrapper
-	opts      *TiingoOptions
-}
-
-type EventDataTiingo struct {
-	ThresholdLevel int `json:"thresholdLevel"`
-}
-
-type TiingoOptions struct {
-	EventName     string           `json:"eventName"`
-	Authorization string           `json:"authorization"`
-	EventData     *EventDataTiingo `json:"eventData"`
-}
-
 // TODO: create an options struct, to defined the variables to setup this websocket
-func NewWsTiingo(ctx context.Context, tiingoWsUrl string, opts *TiingoOptions) *WsTiingo {
+func NewWsTiingo(ctx context.Context, opts *TiingoOptions) *WsTiingo {
+	if opts == nil {
+		err := errors.New("ERROR: TiingoOptions is needed")
+		errorHandler.PanicError(err)
+	}
 	dialOps := &websocket.DialOptions{}
-	c, _, err := websocket.Dial(ctx, tiingoWsUrl, dialOps)
+	c, _, err := websocket.Dial(ctx, opts.Url, dialOps)
 	errorHandler.PanicError(err)
 	wsWrapper := wsWrapper.NewWsWrapper(16)
 	return &WsTiingo{
@@ -48,28 +36,25 @@ func (w *WsTiingo) Close() error {
 	return nil
 }
 
+// Subscribe methos will connect with the respective ws api
 func (w *WsTiingo) Subscribe(ctx context.Context) {
-	interrupt := make(chan os.Signal, 1)
-
-	msg, err := json.Marshal(w.opts)
+	// Subscription to the api
+	msg, err := json.Marshal(w.opts.SubEvent)
 	errorHandler.LogError(err)
 	if err = w.conn.Write(ctx, websocket.MessageText, msg); err != nil {
-		// TODO: It is necesary to panic in this part if some websocket failed
+		// TODO: Is it necesary to panic in this part if some websocket failed?
 		errorHandler.PanicError(err)
 	}
-	// subscribeOptions := &wsWrapper.SubscribeOptions{
-	// 	Event:      "",
-	// 	NotifierFn: w.notifierFunc,
-	// }
-	// w.wsWrapper.Subscribe(ctx, w.conn, subscribeOptions)
+}
 
+func (w *WsTiingo) Listen(ctx context.Context) {
+	interrupt := make(chan os.Signal, 1)
 	done := make(chan struct{})
 
 	go func() {
 		defer close(done)
 		for {
 			_, message, err := w.conn.Read(ctx)
-			fmt.Println()
 			errorHandler.LogError(err)
 			tiingoMsg := &wsMsg.TiingoMsg{}
 			if err := json.Unmarshal(message, tiingoMsg); err != nil {
@@ -78,7 +63,8 @@ func (w *WsTiingo) Subscribe(ctx context.Context) {
 			}
 			// TODO: Handle the error with more logic if failed
 			marketMsg := wsMsg.TiingoAdapter(tiingoMsg)
-			log.Printf("Market: %v", marketMsg)
+			// Publish to all consumers, that was set in the setup
+			w.publish(marketMsg)
 		}
 	}()
 
@@ -89,7 +75,7 @@ func (w *WsTiingo) Subscribe(ctx context.Context) {
 		return
 	}
 	fmt.Println("message2")
-	err = w.conn.Close(websocket.StatusNormalClosure, "")
+	err := w.conn.Close(websocket.StatusNormalClosure, "")
 	if err != nil {
 		log.Println("write close:", err)
 		return
@@ -97,4 +83,8 @@ func (w *WsTiingo) Subscribe(ctx context.Context) {
 	<-done
 }
 
-func (w *WsTiingo) notifierFunc(parameters interface{}) {}
+func (w *WsTiingo) publish(marketMsg *wsMsg.MarketTrackerMsg) {
+	for _, c := range w.opts.Consumers {
+		c.Publish(marketMsg)
+	}
+}
