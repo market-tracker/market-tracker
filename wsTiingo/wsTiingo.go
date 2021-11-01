@@ -14,10 +14,10 @@ import (
 	"nhooyr.io/websocket"
 )
 
-// TODO: create an options struct, to defined the variables to setup this websocket
+// Constructor of WsTiingo
 func NewWsTiingo(ctx context.Context, opts *TiingoOptions) *WsTiingo {
 	if opts == nil {
-		err := errors.New("ERROR: TiingoOptions is needed")
+		err := errors.New("ERROR: opts is needed")
 		errorHandler.PanicError(err)
 	}
 	dialOps := &websocket.DialOptions{}
